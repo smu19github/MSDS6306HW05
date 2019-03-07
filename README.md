@@ -26,6 +26,7 @@ d.	Write these top 10 girl names and their Totals to a CSV file.  Leave out the 
 4.	Upload to GitHub (10 points): Push at minimum your RMarkdown for this homework assignment and a Codebook to one of your GitHub repositories (you might place this in a Homework repo like last week).  The Codebook should contain a short definition of each object you create, and if creating multiple files, which file it is contained in.  You are welcome and encouraged to add other files—just make sure you have a description and directions that are helpful for the grader.
 <br>
 <b>Reminder</b>
+<br>
 To complete this assignment, please submit one RMarkdown and matching HTML file at least one hour before your 6th Live Session.  You do not need to submit a link to your GitHub: just note where the assignment is (URL) in your RMarkdown file.  Make sure it is public!! Please submit all files at the same time; only one submission is granted. 
 Good luck!
 
