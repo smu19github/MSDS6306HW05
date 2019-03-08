@@ -1,0 +1,167 @@
+---
+title: "Unit05HW"
+author: "Heindel Adu"
+date: "3/6/2019"
+output: html_document
+---
+<br>
+
+```{r, message=FALSE}
+#load the required libraries.
+library(RCurl)
+library(data.table)
+library(rvest)
+library(dplyr)
+library(tidyverse)
+library(stringr)
+library(ggplot2)
+
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+plot.title = element_text(hjust = 0.5)
+```
+### Questions 1. Data Munging 
+
+<p> 1.	Data Munging (30 points): Utilize yob2016.txt for this question. This file is a series of popular children’s names born in the year 2016 in the United States. 
+     It consists of three columns with a first name, a gender, and the amount of children given that name.  
+       However, the data is raw and will need cleaning to make it tidy and usable.
+<br>   a.	First, import the .txt file into R so you can process it.  Keep in mind this is not a CSV file. You might have to open the file to see what you’re dealing with.  Assign the resulting data frame to an object, df, that consists of three columns with human-readable column names for each.
+<br>   b.	Display the summary and structure of df
+<br>   c.	Your client tells you that there is a problem with the raw file.  One name was entered twice and misspelled. The client cannot remember which name it is; there are thousands he saw! But he did mention he accidentally put three y’s at the end of the name.  
+     Write an R command to figure out which name it is and display it.
+ d.	Upon finding the misspelled name, please remove this particular observation, as the client says it’s redundant.  
+     Save the remaining dataset as an object: y2016 
+</p>
+
+```{r}
+# Loaded the data yob2016.txt and yob2015.txt using the library(readr) function
+# > library(readr)
+
+yob2015 <- read_csv("~/Documents/Projects/SMU/Classes/Doing Data Science/Units/Unit_5/yob2015.txt",col_names = FALSE, col_types = cols(X2 = col_character()))
+yob2016 <- read_delim("~/Documents/Projects/SMU/Classes/Doing Data Science/Units/Unit_5/yob2016.txt",
+                      ";", escape_double = FALSE, col_types = cols(Gender = col_character()), trim_ws = TRUE)
+
+#Inspect the head and tail of the data tables.
+head(yob2015,6)
+head(yob2016,6)
+tail(yob2015,6)
+tail(yob2016,6)
+
+# Assign the imported data into data frames. Named them dfyob15 and dfyob16 fro r
+dfyob15 <- data.frame(yob2015)
+dfyob16 <- data.frame(yob2016)
+
+# Assign human readable column names for 2015 data set since there were no headers. Inspect the headers again.
+names(dfyob15) <- c("Name", "Gender", "Cases")
+head(dfyob15)
+head(dfyob16)
+
+# Output/Write-out a csv file into the root folder for the two data sets (2015 and 2016)
+write_csv(dfyob15,"~/Documents/Projects/SMU/rProjects/CD4/Unit05HW/DataMungin/dfyob15.csv")
+write_csv(dfyob16,"~/Documents/Projects/SMU/rProjects/CD4/Unit05HW/DataMungin/dfyob16.csv")
+
+
+# Using the list() function to see what files are in the root folder.
+list.files()
+
+# Use the str() function to inspect the structure of the columns and adjust them to the correct data type.
+str(dfyob15)
+str(dfyob16)
+
+summary(dfyob15)
+summary(dfyob16)
+
+# Convert the Gender column data type to factor to allow computation
+#dfyob16$Name<-as.factor(dfyob16$Name)
+dfyob16$Gender <- as.factor(dfyob16$Gender)
+dfyob16$Cases <- as.integer(dfyob16$Cases)
+str(dfyob16)
+
+# 
+summary(dfyob16)
+
+dfyob16[grep("yyy$", dfyob16$Name), ]
+
+y2016 <- dfyob16[-212,]
+y2016[205:215,]
+
+```
+
+
+### Question 2.	Data Merging (30 points): 
+#### Utilize yob2015.txt for this question.  
+<p>    This file is similar to yob2016, but contains names, gender, and total children given that name for the year 2015.
+    <br> a.	Like 1a, please import the .txt file into R.  Look at the file before you do.  You might have to change some options to import it properly. Again, please give the dataframe human-readable column names.  Assign the dataframe to y2015.  
+    <br> b.	Display the last ten rows in the dataframe.  Describe something you find interesting about these 10 rows.
+    <br> c.	Merge y2016 and y2015 by your Name column; assign it to final.  The client only cares about names that have data for both 2016 and 2015; there should be no NA values in either of your amount of children rows after merging.
+</p>
+### Question 3. Data Summary (30 points): 
+#### Utilize your data frame object final for this part.
+<p>  
+<br>    a.	Create a new column called “Total” in final that adds the amount of children in 2015 and 2016 together.  In those two years combined, how many people were given popular names?
+<br>    b.	Sort the data by Total.  What are the top 10 most popular names?
+<br>    c.	The client is expecting a girl!  Omit boys and give the top 10 most popular girl’s names.
+<br>    d.	Write these top 10 girl names and their Totals to a CSV file.  Leave out the other columns entirely.
+</p>
+
+```{r}
+# Both data tables were imported initially above. We will inspect the headers, the head and tail of the dataframe. Prepare for summary and joining of the data frames.
+names(dfyob15)
+names(dfyob16)
+tail(dfyob15, 15)
+
+final <- merge(dfyob15, dfyob16, by = "Name", all = F)
+head(final,15)
+tail(final,15)
+names(final) <- c("Name", "Gender2015", "Count2015", "Gender2016", "Count2016")
+final<-final%>% mutate( Total = Count2015 + Count2016)
+head(final)
+sum(final$Total)
+
+#Sort for the most popular names
+
+final <- final[with(final, order(-Total)), ]
+Top10Girls <- final[final$Gender2015 =="F", ]
+#Top10Boys <- final[final$Gender2015 == "M", ]
+
+#Top 10 Names for all
+
+head(final, 10)
+
+
+#Top 10 Names for girls
+head(Top10Girls, 10)
+
+#Top 10 Names for boys if needed.
+#head(Top10Boys, 10)
+
+FT10Girls <- Top10Girls[1:10, ]
+
+#Remove the row names that was in the merged data
+row.names(FT10Girls) <- c()
+
+#Select only the name and total columns
+FT10Girls <-select(FT10Girls, Name, Total)
+
+head(FT10Girls, 15)
+
+
+# Write out the FT10girls.csv file
+write_csv(FT10Girls, "FT10girls.csv")
+
+#Confirm if the file was written into the right directory
+
+list.files()
+```
+
+```{r}
+
+```
+### Question  4.	Upload to GitHub (10 points): 
+<p>   Push at minimum your RMarkdown for this homework assignment and a Codebook to one of your GitHub repositories (you might place this in a Homework repo like last week).  The Codebook should contain a short definition of each object you create, and if creating multiple files, which file it is contained in.You are welcome and encouraged to add other files—just make sure you have a description and directions that are helpful for the grader.
+
+</p>
+
+
